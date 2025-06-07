@@ -6,11 +6,12 @@ import { User } from "../types/user";
 import { toast } from "react-hot-toast";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
 
-import Select, { Option } from "@/components/ui/forms/select";
+import Select from "@/components/ui/forms/select";
 import Input from "@/components/ui/forms/input";
 import CreateUserForm from "./CreateUserForm";
 import Modal from "@/components/common/modal";
 import ConfirmModal from "@/components/common/modal/confirm";
+import { AxiosError } from "axios";
 
 const roleColors: Record<string, string> = {
   SUPERADMIN: "bg-red-100 text-red-700",
@@ -18,15 +19,21 @@ const roleColors: Record<string, string> = {
   MENTOR: "bg-green-100 text-green-700",
   CASHIER: "bg-yellow-100 text-yellow-700",
 };
+
 interface Props {
   refreshTrigger?: boolean;
 }
+
+type Option = {
+  label: string;
+  value: string;
+};
 
 const UserList = ({ refreshTrigger }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<Option | null>(null);
+  const [roleFilter, setRoleFilter] = useState<string>("");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
@@ -34,7 +41,7 @@ const UserList = ({ refreshTrigger }: Props) => {
 
   const handleEdit = (user: User) => {
     setEditUser(user);
-    setIsEditOpen(true); // نمایش مودال ویرایش
+    setIsEditOpen(true);
   };
 
   const refetchUsers = async () => {
@@ -42,8 +49,14 @@ const UserList = ({ refreshTrigger }: Props) => {
     try {
       const data = await getUsers();
       setUsers(data);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "خطا در دریافت کاربران");
+    } catch (err: unknown) {
+      let message = "خطا در دریافت کاربران";
+
+      if (err instanceof AxiosError && err.response?.data?.error) {
+        message = err.response.data.error;
+      }
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -58,8 +71,12 @@ const UserList = ({ refreshTrigger }: Props) => {
       toast.success("کاربر با موفقیت حذف شد");
       refetchUsers();
       setDeleteUserId(null);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "خطا در حذف کاربر");
+    } catch (err: unknown) {
+      let message = "خطا در حذف کاربر";
+      if (err instanceof AxiosError && err.response?.data?.error) {
+        message = err.response.data.error;
+      }
+      toast.error(message);
     } finally {
       setDeleting(false);
     }
@@ -78,8 +95,12 @@ const UserList = ({ refreshTrigger }: Props) => {
       try {
         const data = await getUsers();
         setUsers(data);
-      } catch (err: any) {
-        toast.error(err?.response?.data?.error || "خطا در دریافت کاربران");
+      } catch (err: unknown) {
+        let message = "خطا در دریافت کاربران";
+        if (err instanceof AxiosError && err.response?.data?.error) {
+          message = err.response.data.error;
+        }
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -95,9 +116,7 @@ const UserList = ({ refreshTrigger }: Props) => {
     return users.filter((u) => {
       const fullName = `${u.firstName} ${u.lastName}`;
       const matchesSearch = fullName.includes(query) || u.phone.includes(query);
-      const matchesRole = roleFilter?.value
-        ? u.role === roleFilter.value
-        : true;
+      const matchesRole = roleFilter ? u.role === roleFilter : true;
       return matchesSearch && matchesRole;
     });
   }, [users, query, roleFilter]);
@@ -118,7 +137,7 @@ const UserList = ({ refreshTrigger }: Props) => {
           />
           <Select
             value={roleFilter}
-            onChange={(val) => setRoleFilter(val)}
+            onChange={(e) => setRoleFilter(e.target.value)}
             options={roleOptions}
           />
         </div>
@@ -267,7 +286,10 @@ const UserList = ({ refreshTrigger }: Props) => {
         >
           <CreateUserForm
             mode="edit"
-            defaultValues={editUser}
+            defaultValues={{
+              ...editUser,
+              mentorType: editUser?.mentorType ?? undefined,
+            }}
             onSuccess={() => {
               setIsEditOpen(false);
               setEditUser(null);

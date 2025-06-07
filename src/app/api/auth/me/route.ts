@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     return NextResponse.json(user);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "توکن نامعتبر است" }, { status: 401 });
   }
 }

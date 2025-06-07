@@ -9,16 +9,21 @@ import { createUser, updateUser } from "../services/userApi";
 import { UserFormData, userSchema } from "../schemas/user.schema";
 import { Role } from "../types/user";
 import { useAuth } from "@/context/AuthContext";
-
 import Input from "@/components/ui/forms/input";
-import Select, { Option } from "@/components/ui/forms/select";
+import Select from "@/components/ui/forms/select";
 import Button from "@/components/ui/forms/button";
+import { AxiosError } from "axios";
 
 interface Props {
   mode?: "create" | "edit";
   defaultValues?: Partial<UserFormData>;
   onSuccess?: () => void;
 }
+
+type Option = {
+  label: string;
+  value: string;
+};
 
 const CreateUserForm = ({
   onSuccess,
@@ -94,12 +99,16 @@ const CreateUserForm = ({
       );
       reset();
       onSuccess?.();
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.error ||
-        (mode === "create"
+    } catch (err: unknown) {
+      let message =
+        mode === "create"
           ? "خطایی در ثبت کاربر رخ داد."
-          : "خطایی در ویرایش کاربر رخ داد.");
+          : "خطایی در ویرایش کاربر رخ داد.";
+
+      if (err instanceof AxiosError && err.response?.data?.error) {
+        message = err.response.data.error;
+      }
+
       toast.error(message, { id: toastId });
     } finally {
       setLoading(false);

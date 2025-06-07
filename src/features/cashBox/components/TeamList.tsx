@@ -31,7 +31,7 @@ export function TeamList({ teams }: { teams: Team[] }) {
               </p>
             )}
           </div>
-          <TeamActions teamId={team.id} />
+          <TeamActions teamId={team.id} teamName={team.name} />
         </div>
       ))}
     </div>

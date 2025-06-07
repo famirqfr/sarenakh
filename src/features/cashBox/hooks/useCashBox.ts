@@ -19,7 +19,7 @@ export function useCashBox() {
           setTeams(data.teams);
           setAllowed(true);
         }
-      } catch (err) {
+      } catch {
         setError("خطای شبکه");
       } finally {
         setLoading(false);

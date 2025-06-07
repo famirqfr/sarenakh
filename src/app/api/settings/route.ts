@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { Role } from "@prisma/client/edge";
 
-const checkAuth = async (req: NextRequest) => {
+const checkAuth = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
-  const auth = await checkAuth(req);
+  const auth = await checkAuth();
   if (auth.error) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -92,7 +92,10 @@ export async function POST(req: NextRequest) {
       }),
       prisma.gameSetting.upsert({
         where: { key: "HELP_COST_MENTORING_PROFESSIONAL" },
-        create: { key: "HELP_COST_MENTORING_PROFESSIONAL", value: professional },
+        create: {
+          key: "HELP_COST_MENTORING_PROFESSIONAL",
+          value: professional,
+        },
         update: { value: professional },
       }),
     ]);

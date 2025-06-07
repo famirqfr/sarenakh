@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { Role } from "@prisma/client/edge";
 
-const checkAuth = async (req: NextRequest) => {
+const checkAuth = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
@@ -45,7 +45,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await checkAuth(req);
+  const auth = await checkAuth();
   if (auth.error) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }

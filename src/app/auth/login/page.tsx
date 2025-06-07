@@ -36,11 +36,22 @@ export default function LoginPage() {
       });
 
       router.push("/dashboard");
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.error || err.message || "خطای ناشناخته‌ای رخ داد",
-        { icon: "❌" }
-      );
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "response" in err) {
+        const axiosError = err as {
+          response?: { data?: { error?: string } };
+          message?: string;
+        };
+
+        toast.error(
+          axiosError.response?.data?.error ||
+            axiosError.message ||
+            "خطای ناشناخته‌ای رخ داد",
+          { icon: "❌" }
+        );
+      } else {
+        toast.error("خطای ناشناخته‌ای رخ داد", { icon: "❌" });
+      }
     } finally {
       reset();
     }

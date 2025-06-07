@@ -1,13 +1,15 @@
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { Role } from "@prisma/client";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: teamId } = await context.params;
     const token = (await cookies()).get("access_token")?.value;
     if (!token)
       return NextResponse.json({ error: "توکن موجود نیست" }, { status: 401 });
@@ -17,7 +19,6 @@ export async function DELETE(
       return NextResponse.json({ error: "دسترسی غیرمجاز" }, { status: 403 });
     }
 
-    const teamId = params.id;
     if (!teamId)
       return NextResponse.json(
         { error: "شناسه تیم ارسال نشده است" },

@@ -45,7 +45,9 @@ export async function GET() {
       select: { teamId: true },
     });
 
-    const solvedTeamIds = solvedTeams.map((t) => t.teamId);
+    const solvedTeamIds = solvedTeams
+      .map((t) => t.teamId)
+      .filter((id): id is string => typeof id === "string");
 
     const teams = await prisma.team.findMany({
       where: {

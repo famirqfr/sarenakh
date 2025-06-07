@@ -29,22 +29,28 @@ export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const logId = searchParams.get("logId");
 
-  if (!logId) return new Response("Missing logId", { status: 400 });
+  if (!logId) {
+    return new Response("Missing logId", { status: 400 });
+  }
 
   const log = await prisma.teamActionLog.findUnique({
-    where: { id: logId },
+    where: { id: logId as string },
   });
 
-  if (!log) return new Response("Log not found", { status: 404 });
+  if (!log) {
+    return new Response("Log not found", { status: 404 });
+  }
 
   const delta = log.delta ?? 0;
 
   await prisma.$transaction(async (tx) => {
-    await tx.teamActionLog.delete({ where: { id: logId } });
+    await tx.teamActionLog.delete({
+      where: { id: log.id },
+    });
 
     if (delta !== 0) {
       await tx.team.update({
-        where: { id: log.teamId },
+        where: { id: log.id },
         data: {
           points: {
             decrement: delta,

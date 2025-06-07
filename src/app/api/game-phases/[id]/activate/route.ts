@@ -1,32 +1,23 @@
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
+  const { id } = await context.params;
 
+  const token = (await cookies()).get("access_token")?.value;
   if (!token) {
-    return { error: "توکن یافت نشد", status: 401 };
+    return NextResponse.json({ message: "توکن یافت نشد" }, { status: 401 });
   }
 
   const payload = verifyToken(token) as { id: string; role: Role };
   if (!["SUPERADMIN", "ADMIN"].includes(payload.role)) {
-    return { error: "دسترسی غیرمجاز", status: 403 };
-  }
-
-  const id = params.id;
-
-  if (!id) {
-    return NextResponse.json(
-      { message: "Invalid parameters" },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: "دسترسی غیرمجاز" }, { status: 403 });
   }
 
   try {
@@ -42,7 +33,7 @@ export async function POST(
 
     await prisma.teamActionLog.create({
       data: {
-        action: `phase_activation`,
+        action: "phase_activation",
         phaseId: updatedPhase.id,
         userId: payload.id,
       },
@@ -50,10 +41,7 @@ export async function POST(
 
     return NextResponse.json(updatedPhase);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("خطای فعال‌سازی مرحله:", error);
+    return NextResponse.json({ message: "خطای داخلی سرور" }, { status: 500 });
   }
 }

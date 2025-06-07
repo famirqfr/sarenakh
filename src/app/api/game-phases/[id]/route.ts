@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
-import { Role } from "@prisma/client/edge";
+import { Role } from "@prisma/client";
 
-const checkAuth = async (req: NextRequest) => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
+export const runtime = "nodejs";
+
+const checkAuth = async () => {
+  const token = (await cookies()).get("access_token")?.value;
 
   if (!token) {
     return { error: "توکن یافت نشد", status: 401 };
@@ -22,24 +23,28 @@ const checkAuth = async (req: NextRequest) => {
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const phase = await prisma.gamePhase.findUnique({ where: { id: params.id } });
+  const { id } = await context.params;
+  const phase = await prisma.gamePhase.findUnique({ where: { id } });
+
   if (!phase) {
     return NextResponse.json({ error: "مرحله یافت نشد" }, { status: 404 });
   }
+
   return NextResponse.json(phase);
 }
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await checkAuth(req);
+  const auth = await checkAuth();
   if (auth.error) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const { id } = await context.params;
   const body = await req.json();
   const { title, description, rewardPoints, duration, allowedRoles } = body;
 
@@ -48,7 +53,7 @@ export async function PUT(
   }
 
   const updated = await prisma.gamePhase.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       title,
       description,
@@ -66,13 +71,15 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await checkAuth(req);
+  const auth = await checkAuth();
   if (auth.error) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  await prisma.gamePhase.delete({ where: { id: params.id } });
+  const { id } = await context.params;
+  await prisma.gamePhase.delete({ where: { id } });
+
   return NextResponse.json({ success: true });
 }

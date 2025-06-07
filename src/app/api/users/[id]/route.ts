@@ -15,9 +15,10 @@ const updateUserSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: userId } = await context.params;
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
@@ -34,7 +35,6 @@ export async function PUT(
       );
     }
 
-    const userId = params.id;
     if (!userId) {
       return NextResponse.json(
         { error: "شناسه کاربر نامعتبر است" },
@@ -121,9 +121,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: userId } = await context.params;
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
@@ -139,8 +140,6 @@ export async function DELETE(
         { status: 403 }
       );
     }
-
-    const userId = params.id;
 
     if (!userId) {
       return NextResponse.json(
