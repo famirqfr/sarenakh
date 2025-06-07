@@ -43,3 +43,9 @@ export const updateHelpCosts = async ({
   });
   return data;
 };
+
+export const resetGame = async () => {
+  return await axiosInstance.post("/api/settings/reset-game", null, {
+    responseType: "blob",
+  });
+};

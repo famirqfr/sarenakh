@@ -8,11 +8,13 @@ import toast from "react-hot-toast";
 import {
   getHelpCosts,
   getInitialTeamPoints,
+  resetGame,
   updateHelpCosts,
   updateInitialTeamPoints,
 } from "../api/settingsApi";
 import { AxiosError } from "axios";
 import { CircleDollarSign, ClipboardPen, HeartHandshake } from "lucide-react";
+import ConfirmModal from "@/components/common/modal/confirm";
 
 type FormFields = {
   points: string;
@@ -27,6 +29,7 @@ export default function SettingsForm() {
   const isAllowed = user?.role === "SUPERADMIN" || user?.role === "ADMIN";
 
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [form, setForm] = useState<FormFields>({
     points: "",
     simpleCost: "",
@@ -34,7 +37,7 @@ export default function SettingsForm() {
     specialCost: "",
     boxCost: "",
   });
-  const [initialForm, setInitialForm] = useState<FormFields>(form);
+  const [initialForm, setInitialForm] = useState<FormFields | null>(null);
 
   useEffect(() => {
     if (!isAllowed) return;
@@ -102,8 +105,33 @@ export default function SettingsForm() {
     }
   };
 
+  const doResetGame = async () => {
+    setLoading(true);
+    try {
+      const response = await resetGame();
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup-game-${new Date().toISOString()}.xlsx`;
+      a.click();
+      a.remove();
+
+      toast.success("بازی ریست شد و خروجی دریافت شد");
+    } catch {
+      toast.error("خطا در ریست بازی");
+    } finally {
+      setLoading(false);
+      setConfirmOpen(false);
+    }
+  };
+
   const isDisabled =
     loading ||
+    !initialForm ||
     (Object.keys(form) as (keyof FormFields)[]).every(
       (key) => form[key] === initialForm[key]
     );
@@ -162,8 +190,8 @@ export default function SettingsForm() {
             value={form.specialCost}
             onChange={handleChange("specialCost")}
             type="number"
-            inputExtra="bg-white"
             min={0}
+            inputExtra="bg-white"
           />
         </div>
 
@@ -185,6 +213,27 @@ export default function SettingsForm() {
       <Button type="button" disable={isDisabled} onClick={handleSubmit}>
         {loading ? "در حال ذخیره..." : "ذخیره تغییرات"}
       </Button>
+
+      <Button
+        type="button"
+        className="bg-red-600 hover:bg-red-700 text-white"
+        onClick={() => setConfirmOpen(true)}
+      >
+        ریست کامل بازی + دریافت خروجی اکسل
+      </Button>
+
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={doResetGame}
+        title="ریست کامل بازی"
+        description="برای ریست کامل بازی، رمز تأیید را وارد کنید. این عملیات غیرقابل بازگشت است."
+        confirmText="بله، ریست کن"
+        cancelText="لغو"
+        loading={loading}
+        requirePassword={true}
+        correctPassword="sarenakh"
+      />
     </div>
   );
 }
