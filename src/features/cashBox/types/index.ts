@@ -1,0 +1,1 @@
+export type CashBoxAction = 'solved' | 'not-solved';

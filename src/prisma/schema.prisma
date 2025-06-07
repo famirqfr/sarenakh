@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id         String      @id @default(uuid())
+  firstName  String
+  lastName   String
+  phone      String      @unique
+  role       Role
+  mentorType MentorType?
+  createdAt  DateTime    @default(now())
+  actionLogs TeamActionLog[]
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+  status    TeamStatus @default(ACTIVE)
+  leader    TeamMember? @relation("TeamLeader", fields: [leaderId], references: [id])
+  leaderId  String?     @unique
+  members   TeamMember[] @relation("TeamMembers")
+  actionLogs TeamActionLog[]
+}
+
+model TeamMember {
+  id        String @id @default(uuid())
+  firstName String
+  lastName  String
+  age       Int
+  phone     String
+  relation  String
+  team      Team   @relation("TeamMembers", fields: [teamId], references: [id])
+  teamId    String
+  leadsTeam Team? @relation("TeamLeader")
+}
+
+model GamePhase {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  rewardPoints Int
+  duration     Int 
+  isActive     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  allowedRoles GamePhaseAllowedRole[]
+  actionLogs TeamActionLog[]
+}
+
+model GamePhaseAllowedRole {
+  id          String @id @default(uuid())
+  role        Role
+  gamePhase   GamePhase @relation(fields: [gamePhaseId], references: [id])
+  gamePhaseId String
+}
+
+model GameSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  MENTOR
+  CASHIER
+}
+
+model TeamActionLog {
+  id        String     @id @default(uuid())
+  team      Team?      @relation(fields: [teamId], references: [id])
+  teamId    String?    // now optional
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
+  action    String
+  phase     GamePhase? @relation(fields: [phaseId], references: [id])
+  phaseId   String?
+  delta     Int?
+  timestamp DateTime   @default(now())
+
+  @@map("logs")
+}
+
+
+
+enum TeamStatus {
+  ACTIVE
+  ELIMINATED
+  LEFT
+  INACTIVE
+}
+
+enum MentorType {
+  GOOD
+  BAD
+}

@@ -1,21 +1,60 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: "iranYekan";
+  src: url("/fonts/IRANYekanWebFn-Bold.woff2") format("woff2"),
+    url("/fonts/IRANYekanWebFn-Bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "iranYekan";
+  src: url("/fonts/IRANYekanWebFn-ExtraBold.woff2") format("woff2"),
+    url("/fonts/IRANYekanWebFn-ExtraBold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "iranYekan";
+  src: url("/fonts/IRANYekanWebFn-Medium.woff2") format("woff2"),
+    url("/fonts/IRANYekanWebFn-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "iranYekan";
+  src: url("/fonts/IRANYekanWebFn.woff2") format("woff2"),
+    url("/fonts/IRANYekanWebFn.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eeeeee;
+  --foreground: #00092c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-iranYekan: "iranYekan";
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #00092c;
+    --foreground: #eeeeee;
   }
 }
 
@@ -23,4 +62,48 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  @keyframes rotate-center {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes glow {
+    0%,
+    100% {
+      text-shadow: 0 0 5px #ff5f00, 0 0 10px #ff5f00;
+    }
+    50% {
+      text-shadow: 0 0 10px #ff5f00, 0 0 20px #ff5f00;
+    }
+  }
+
+  @keyframes fade {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-rotate-center {
+    animation: rotate-center 6s linear infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .animate-fade {
+    animation: fade 1s ease-in-out both;
+  }
 }
