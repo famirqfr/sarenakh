@@ -10,6 +10,7 @@ import Button from "@/components/ui/forms/button";
 import { loginSchema, LoginSchema } from "../schemas/loginSchema";
 import axiosInstance from "@/lib/axiosInstance";
 import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -73,6 +74,14 @@ export default function LoginPage() {
       >
         {isSubmitting ? "در حال ورود..." : "ورود"}
       </Button>
+      <div className="text-center pt-2">
+        <Link
+          href="/board"
+          className="text-sm text-orange-500 hover:text-orange-300 transition-colors underline underline-offset-4"
+        >
+          👑 مشاهده جدول برترین تیم‌ها
+        </Link>
+      </div>
     </form>
   );
 }

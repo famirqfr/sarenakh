@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   }
 
   const payload = { id: user.id, role: user.role };
+  const TEN_HOURS_IN_SECONDS = 10 * 60 * 60;
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
   response.headers.append(
     "Set-Cookie",
     [
-      `access_token=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=900`,
+      `access_token=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${TEN_HOURS_IN_SECONDS}`,
       `refresh_token=${refreshToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${
         60 * 60 * 24 * 7
       }`,
