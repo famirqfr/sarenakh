@@ -90,6 +90,13 @@ model TeamActionLog {
   @@map("logs")
 }
 
+model OTP {
+  phone     String @id
+  code      String
+  createdAt DateTime
+}
+
+
 
 
 enum TeamStatus {

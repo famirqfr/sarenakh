@@ -3,22 +3,18 @@ import { prisma } from "@/lib/db";
 import { generateAccessToken, generateRefreshToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
-  const { phone } = await req.json();
+  const { phone, otp } = await req.json();
 
-  if (!phone) {
-    return NextResponse.json(
-      { error: "شماره تلفن الزامی است" },
-      { status: 400 }
-    );
+  const record = await prisma.oTP.findUnique({ where: { phone } });
+
+  if (!record || record.code !== otp) {
+    return NextResponse.json({ error: "کد تأیید اشتباه است" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({ where: { phone } });
 
   if (!user) {
-    return NextResponse.json(
-      { error: "کاربری با این شماره یافت نشد" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "کاربری یافت نشد" }, { status: 404 });
   }
 
   const payload = { id: user.id, role: user.role };
@@ -38,6 +34,9 @@ export async function POST(req: Request) {
       }`,
     ].join(", ")
   );
+
+  // optionally delete OTP after use
+  await prisma.oTP.delete({ where: { phone } });
 
   return response;
 }
