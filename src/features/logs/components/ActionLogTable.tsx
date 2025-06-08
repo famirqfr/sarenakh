@@ -55,8 +55,8 @@ export function ActionLogTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm rtl text-right border border-gray-200 dark:border-gray-700 rounded">
-          <thead className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+        <table className="w-full text-sm p-4 rtl text-right border rounded-3xl   border-gray-200 dark:border-gray-700 rounded">
+          <thead className="bg-gray-100 p-4 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
             <tr>
               <th className="p-3">تیم</th>
               <th className="p-3">کاربر</th>

@@ -48,9 +48,11 @@ export async function DELETE(req: Request) {
       where: { id: log.id },
     });
 
-    if (delta !== 0) {
+    const teamId = log.teamId ?? undefined;
+
+    if (delta !== 0 && teamId) {
       await tx.team.update({
-        where: { id: log.id },
+        where: { id: teamId },
         data: {
           points: {
             decrement: delta,

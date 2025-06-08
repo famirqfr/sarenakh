@@ -25,7 +25,7 @@ export function LogFilter({ onChange, teams, users, actions }: LogFilterProps) {
 
   useEffect(() => {
     onChange({ teamId, userId, action });
-  }, [teamId, userId, action, onChange]);
+  }, [teamId, userId, action]);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">

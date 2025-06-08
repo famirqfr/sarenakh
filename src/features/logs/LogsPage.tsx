@@ -28,7 +28,7 @@ export default function LogsPage() {
       setFilteredLogs(res.data);
     });
   }, []);
-
+  
   const handleDelete = async (id: string) => {
     await axios.delete("/api/logs", { params: { logId: id } });
     const newLogs = allLogs.filter((log) => log.id !== id);
